@@ -20,17 +20,15 @@
 ## 🌟 Concept
 Emoji-Alchemistは、テキストプロンプトと人間の感性を融合させ、新しい絵文字を錬成（生成）することを試みる実験的なプロジェクトです。
 
+| background | Idea |
+|----------|----------------------|
+| <img src="assets/slides/slide_3.png" width="100%"> | <img src="assets/slides/slide_5.png" width="100%"> |
+
 分子探索などの科学分野で強力な性能を発揮する「VAE（変分オートエンコーダ）+ BO（ベイズ最適化）」のフレームワークを、人間の「感性」が評価基準となる創造的な画像生成タスクに応用できるかを探求します．
 このプロジェクトは，私が所属しているデータ駆動型システム研究グループの発表のためのものです．
 
 人間のフィードバックをループに取り入れた、インタラクティブな画像生成アーキテクチャを目指しました
 
-<details>
-<summary>Why VAE + BO for creativity? (click to expand)</summary>
-
-![Idea diagram](assets/slides/slide_5.png)
-
-</details>
 
 ### Conv-VAE (畳み込み変分オートエンコーダ)
 
@@ -57,7 +55,7 @@ Human Feedbackボーナス: ユーザーが「良い」とクリックした画�
 ## 🔬 Architecture & Technologies
 | Overview | BO Failure (5 steps) |
 |----------|----------------------|
-| <img src="assets/slides/slide_11.png" width="100%"> | <img src="assets/slides/slide_15.png" width="100%"> |
+| <img src="assets/slides/slide_7.png" width="100%"> | <img src="assets/slides/slide_8.png" width="100%"> |
 
 ## 🚀 Demo
 （ここにデモのGIFや動画を挿入することを強く推奨します）
