@@ -22,14 +22,16 @@ Emoji-Alchemistは、テキストプロンプトと人間の感性を融合さ�
 
 | background | Idea |
 |----------|----------------------|
-| <img src="assets/slides/slide_3.png" width="100%"> | <img src="assets/slides/slide_5.png" width="100%"> |
+| <img src="assets/slides/slide_3.png" width="80%"> | <img src="assets/slides/slide_5.png" width="80%"> |
 
 分子探索などの科学分野で強力な性能を発揮する「VAE（変分オートエンコーダ）+ BO（ベイズ最適化）」のフレームワークを、人間の「感性」が評価基準となる創造的な画像生成タスクに応用できるかを探求します．
 このプロジェクトは，私が所属しているデータ駆動型システム研究グループの発表のためのものです．
 
 人間のフィードバックをループに取り入れた、インタラクティブな画像生成アーキテクチャを目指しました
 
-
+<p align="center">
+  <img src="assets/slides/slide_9.png" width="40%" alt="Human In The Loop System">
+</p>
 ### Conv-VAE (畳み込み変分オートエンコーダ)
 
 高品質な絵文字データセットOpenMojiを学習し、絵文字の特徴を保持した潜在空間を構築します。この潜在空間内のベクトル（z）を操作することで、様々な絵文字画像を生成（デコード）できます。
@@ -43,6 +45,9 @@ Emoji-Alchemistは、テキストプロンプトと人間の感性を融合さ�
 ### ブラックボックス評価関数
 
 BOが最大化を目指す「評価スコア」を算出する関数です。この関数こそが、本プロジェクトの核となる「人間の感性」を取り込む部分です。
+<p align="center">
+  <img src="assets/slides/slide_18.png" width="40%" alt="BB function deatail">
+</p>
 
 スコア = (CLIPスコア) - (顔崩壊ペナルティ) + (人間からのフィードバックボーナス)
 
@@ -53,7 +58,7 @@ CLIPスコア: 生成画像がテキストプロンプト（例：「氷でで�
 Human Feedbackボーナス: ユーザーが「良い」とクリックした画像に高いボーナススコアを与え、探索の方向性をユーザーの好みに誘導します。
 
 ## 🔬 Architecture & Technologies
-| Overview | BO Failure (5 steps) |
+| Overview | Blackbox Fuction Design |
 |----------|----------------------|
 | <img src="assets/slides/slide_7.png" width="100%"> | <img src="assets/slides/slide_8.png" width="100%"> |
 
