@@ -22,7 +22,7 @@ Emoji-Alchemistは、テキストプロンプトと人間の感性を融合さ�
 
 | background | Idea |
 |----------|----------------------|
-| <img src="assets/slides/slide_3.png" width="80%"> | <img src="assets/slides/slide_5.png" width="80%"> |
+| <img src="assets/slides/slide_3.png" width="100%"> | <img src="assets/slides/slide_5.png" width="100%"> |
 
 分子探索などの科学分野で強力な性能を発揮する「VAE（変分オートエンコーダ）+ BO（ベイズ最適化）」のフレームワークを、人間の「感性」が評価基準となる創造的な画像生成タスクに応用できるかを探求します．
 このプロジェクトは，私が所属しているデータ駆動型システム研究グループの発表のためのものです．
@@ -30,7 +30,7 @@ Emoji-Alchemistは、テキストプロンプトと人間の感性を融合さ�
 人間のフィードバックをループに取り入れた、インタラクティブな画像生成アーキテクチャを目指しました
 
 <p align="center">
-  <img src="assets/slides/slide_9.png" width="40%" alt="Human In The Loop System">
+  <img src="assets/slides/slide_9.png" width="50%" alt="Human In The Loop System">
 </p>
 ### Conv-VAE (畳み込み変分オートエンコーダ)
 
@@ -46,7 +46,7 @@ Emoji-Alchemistは、テキストプロンプトと人間の感性を融合さ�
 
 BOが最大化を目指す「評価スコア」を算出する関数です。この関数こそが、本プロジェクトの核となる「人間の感性」を取り込む部分です。
 <p align="center">
-  <img src="assets/slides/slide_18.png" width="40%" alt="BB function deatail">
+  <img src="assets/slides/slide_18.png" width="50%" alt="BB function deatail">
 </p>
 
 スコア = (CLIPスコア) - (顔崩壊ペナルティ) + (人間からのフィードバックボーナス)
