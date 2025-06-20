@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 
 <p align="center">
-  <img src="assets/slides/slide_1.png" width="80%" alt="Emoji Alchemist banner">
+  <img src="assets/slides/slide_1.png" width="40%" alt="Emoji Alchemist banner">
 </p>
   
 
@@ -57,7 +57,7 @@ Human Feedbackボーナス: ユーザーが「良い」とクリックした画�
 ## 🔬 Architecture & Technologies
 | Overview | BO Failure (5 steps) |
 |----------|----------------------|
-| <img src="assets/slides/slide_11.png" width="45%"> | <img src="assets/slides/slide_15.png" width="45%"> |
+| <img src="assets/slides/slide_11.png" width="100%"> | <img src="assets/slides/slide_15.png" width="100%"> |
 
 ## 🚀 Demo
 （ここにデモのGIFや動画を挿入することを強く推奨します）
@@ -78,7 +78,7 @@ Human Feedbackボーナス: ユーザーが「良い」とクリックした画�
 
 ## 💡 Results & Discussion
 <p align="center">
-  <img src="assets/slides/slide_15.png" width="60%" alt="Collapse after 5 BO steps">
+  <img src="assets/slides/slide_15.png" width="50%" alt="Collapse after 5 BO steps">
   <br>
   <em>BO はわずか数ステップで画像を崩壊させてしまう ―― なぜ？</em>
 </p>
