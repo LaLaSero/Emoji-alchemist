@@ -3,6 +3,11 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 
+<p align="center">
+  <img src="assets/slides/slide_1.png" width="80%" alt="Emoji Alchemist banner">
+</p>
+  
+
 ## Table of Contents
 - [🌟 Concept](#-concept)
 - [🔬 Architecture & Technologies](#-architecture--technologies)
@@ -19,6 +24,13 @@ Emoji-Alchemistは、テキストプロンプトと人間の感性を融合さ�
 このプロジェクトは，私が所属しているデータ駆動型システム研究グループの発表のためのものです．
 
 人間のフィードバックをループに取り入れた、インタラクティブな画像生成アーキテクチャを目指しました
+
+<details>
+<summary>Why VAE + BO for creativity? (click to expand)</summary>
+
+![Idea diagram](assets/slides/slide_5.png)
+
+</details>
 
 ### Conv-VAE (畳み込み変分オートエンコーダ)
 
@@ -42,6 +54,11 @@ CLIPスコア: 生成画像がテキストプロンプト（例：「氷でで�
 
 Human Feedbackボーナス: ユーザーが「良い」とクリックした画像に高いボーナススコアを与え、探索の方向性をユーザーの好みに誘導します。
 
+## 🔬 Architecture & Technologies
+| Overview | BO Failure (5 steps) |
+|----------|----------------------|
+| <img src="assets/slides/slide_11.png" width="45%"> | <img src="assets/slides/slide_15.png" width="45%"> |
+
 ## 🚀 Demo
 （ここにデモのGIFや動画を挿入することを強く推奨します）
 
@@ -60,6 +77,12 @@ Human Feedbackボーナス: ユーザーが「良い」とクリックした画�
 このループを繰り返すことで、AIは徐々にユーザーの感性に近づいていきます。
 
 ## 💡 Results & Discussion
+<p align="center">
+  <img src="assets/slides/slide_15.png" width="60%" alt="Collapse after 5 BO steps">
+  <br>
+  <em>BO はわずか数ステップで画像を崩壊させてしまう ―― なぜ？</em>
+</p>
+
 ### VAE + BO アプローチの限界
 実験の結果、本アプローチでは数ステップの最適化で画像が崩壊してしまう傾向が見られました。
 
