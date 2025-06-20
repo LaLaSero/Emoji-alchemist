@@ -1,4 +1,4 @@
-# generate.py
+# generate_by_diff.py
 import torch
 import torchvision.utils as vutils
 from conv_vae import ConvVAE
@@ -15,7 +15,9 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # 1. VAE（デコーダーとして使用）
 print("Loading pre-trained VAE...")
 vae = ConvVAE(z_dim=Z_DIM).to(DEVICE)
-vae.load_state_dict(torch.load("emoji_vae.pth"))
+# vae.load_state_dict(torch.load("emoji_vae.pth"))
+# 拡散モデルの学習時と同じ、新しいVAEの重みをロードする
+vae.load_state_dict(torch.load("emoji_vae_clip_fast.pth"))
 vae.eval()
 
 # 2. Latent Diffusion Model (U-Net)

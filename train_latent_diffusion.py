@@ -1,4 +1,5 @@
 # train_latent_diffusion.py
+import math
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 from conv_vae import ConvVAE
@@ -8,14 +9,25 @@ import torch.nn.functional as F
 # --- ハイパーパラメータ ---
 Z_DIM = 32
 TIMESTEPS = 1000
-BETA_START = 0.0001
-BETA_END = 0.02
 DEVICE = "cuda"
+
+# Cosine beta schedule
+def cosine_beta_schedule(timesteps: int, s: float = 0.1) -> torch.Tensor:
+    steps = torch.arange(timesteps + 1, dtype=torch.float32, device=DEVICE)
+    alphas_cumprod = torch.cos(((steps / timesteps) + s) / (1 + s) * math.pi / 2) ** 2
+    alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
+    betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
+    return betas
+
+betas = cosine_beta_schedule(TIMESTEPS, s=0.1)
+
+alphas = 1. - betas
+alphas_cumprod = torch.cumprod(alphas, axis=0)
 
 # --- 1. 学習済みのVAEをロード（重みは固定） ---
 print("Loading pre-trained VAE...")
 vae = ConvVAE(z_dim=Z_DIM).to(DEVICE)
-vae.load_state_dict(torch.load("emoji_vae.pth"))
+vae.load_state_dict(torch.load("emoji_vae_clip_fast.pth"))
 vae.eval()
 for param in vae.parameters():
     param.requires_grad = False
@@ -33,27 +45,23 @@ with torch.no_grad():
         latents.append(mu.cpu())
 latents = torch.cat(latents, dim=0)
 
-
+latent_mean = latents.mean(dim=0)
 scale_factor = latents.std()
-print(f"Original latent std: {scale_factor:.4f}")
+print(f"Original latent mean abs: {latent_mean.abs().mean():.4f} | std: {scale_factor:.4f}")
 
-# 潜在ベクトルを正規化（標準偏差が1になるように）
-latents = latents / scale_factor
+# --- 白色化: (z - mean) / std ---------------------------------
+latents = (latents - latent_mean) / scale_factor
 
-# このスケール値を後で生成時に使うために保存
-torch.save(scale_factor, "vae_latent_scale.pt")
-print(f"Latents normalized. New std: {latents.std():.4f}. Scale factor saved.")
+# 生成時に使うため保存
+torch.save(latent_mean,   "vae_latent_mean.pt")
+torch.save(scale_factor,  "vae_latent_scale.pt")
+print(f"Latents normalized. New mean: {latents.mean():.4f}, std: {latents.std():.4f} | mean/std saved.")
 
 latent_loader = DataLoader(TensorDataset(latents), batch_size=512, shuffle=True)
 
 # --- 3. Diffusionモデルの準備 ---
 model = LatentUNet(z_dim=Z_DIM).to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-
-# Noise schedule
-betas = torch.linspace(BETA_START, BETA_END, TIMESTEPS, device=DEVICE)
-alphas = 1. - betas
-alphas_cumprod = torch.cumprod(alphas, axis=0)
 
 def get_noisy_latent(z_start, t, noise):
     sqrt_alpha_cumprod = torch.sqrt(alphas_cumprod[t])[:, None]
@@ -83,7 +91,7 @@ for epoch in range(5000): # 実際にはもっと多くのエポックが必要
         loss.backward()
         optimizer.step()
         
-    if epoch % 20 == 0:
+    if epoch % 25 == 0:
         print(f"Epoch {epoch:04d} | Loss: {loss.item():.6f}")
 
 torch.save(model.state_dict(), "latent_diffusion.pth")

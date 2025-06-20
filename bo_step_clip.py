@@ -8,6 +8,7 @@ from botorch.optim import optimize_acqf
 from gpytorch.mlls import ExactMarginalLogLikelihood
 import torchvision.utils as vutils
 from torchvision import transforms
+from torch.utils.data import DataLoader, TensorDataset # DataLoaderを追加
 
 # --- モデルのロード ---
 from conv_vae import ConvVAE
@@ -17,9 +18,10 @@ Z_DIM = 32
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 print("Loading models (VAE, Diffusion, CLIP)...")
-# VAE (デコーダーとして使用)
+# VAE (エンコーダーとデコーダーとして使用)
 vae = ConvVAE(z_dim=Z_DIM).to(DEVICE)
-vae.load_state_dict(torch.load("emoji_vae.pth"))
+# ★★★ 修正点1: 正しいVAEの重みファイルをロード ★★★
+vae.load_state_dict(torch.load("emoji_vae_clip_fast.pth"))
 vae.eval()
 
 # Latent Diffusion Model
@@ -75,37 +77,24 @@ clip_transform = transforms.Compose([
 ])
 
 def clip_preference_function(z: torch.Tensor) -> torch.Tensor:
-    """
-    潜在ベクトルzから画像を生成し、ターゲットテキストとのCLIP類似度を計算する。
-    """
     with torch.no_grad():
-        # Step 1: zをデコードして画像にする
         z_unscaled = z * scale_factor
         images = vae.decode(z_unscaled) # [-1, 1]の範囲
         images = (images + 1) / 2      # [0, 1]に変換
-
-        # Step 2: CLIP用に画像を前処理
         images_preprocessed = clip_transform(images)
-
-        # Step 3: 画像の特徴量を計算
         image_features = clip_model.encode_image(images_preprocessed).float()
         image_features /= image_features.norm(dim=-1, keepdim=True)
-
-        # Step 4: テキスト特徴量との類似度（コサイン類似度）を計算
-        # Botorchは大きい値を最大化しようとするので、類似度をそのまま返す
         similarity = (100.0 * image_features @ TARGET_TEXT_FEATURES.T)
-    
-    return similarity.squeeze(1).detach().cpu() # (N, 1) -> (N,)
+    return similarity.squeeze(1).detach().cpu()
 
 # --- ベイズ最適化の実行 ---
 print(f"\nTarget text: '{TARGET_TEXT}'")
 # Step 1: 高品質な初期データ(train_x)を生成
 print("Generating initial high-quality latents for BO...")
-train_x = generate_latents(num_latents=20) # 初期サンプルは少なめでも良い
+train_x = generate_latents(num_latents=20)
 
 # Step 2: 初期データのスコアをCLIPで評価
 print("Evaluating initial latents with CLIP...")
-# BoTorchは(N, 1)の形状を期待するのでreshape
 train_y = clip_preference_function(train_x).unsqueeze(1)
 
 # Step 3: GPモデルの学習
@@ -116,7 +105,27 @@ fit_gpytorch_mll(mll)
 
 # Step 4: UCBでacquisition最大化
 ucb = UpperConfidenceBound(gp, beta=0.2)
-bounds = torch.stack([train_x.cpu().min(dim=0).values, train_x.cpu().max(dim=0).values])
+
+# ★★★ 修正点2: 探索範囲を全学習データから決定 ★★★
+print("Determining search bounds from the entire dataset...")
+# 全画像データをロード
+all_images = torch.load("openmoji_72x72.pt")
+loader = DataLoader(TensorDataset(all_images), batch_size=512)
+all_latents = []
+with torch.no_grad():
+    for (x_batch,) in loader:
+        mu, _ = vae.encode(x_batch.to(DEVICE))
+        # 拡散モデル学習時と同様にスケールファクターで割って正規化
+        all_latents.append(mu / scale_factor) 
+all_latents = torch.cat(all_latents, dim=0)
+
+# 全潜在ベクトルから最小値と最大値を計算して探索範囲とする
+bounds = torch.stack([
+    all_latents.cpu().min(dim=0).values,
+    all_latents.cpu().max(dim=0).values
+])
+print("Search bounds determined.")
+# ★★★ 修正ここまで ★★★
 
 print("Optimizing acquisition function to find the next best emoji...")
 new_z, _ = optimize_acqf(
@@ -128,11 +137,14 @@ new_z = new_z.to(DEVICE) # GPUに戻す
 
 # --- 結果の可視化 ---
 with torch.no_grad():
-    z_all = torch.cat([train_x[:4], new_z], dim=0) # 初期サンプル4つ + BO提案1つ
+    # 表示する初期サンプルをランダムに選択
+    initial_indices = torch.randperm(train_x.size(0))[:4]
+    z_all = torch.cat([train_x[initial_indices], new_z], dim=0) # 初期サンプル4つ + BO提案1つ
     z_unscaled = z_all * scale_factor
     decoded = vae.decode(z_unscaled)
     decoded = (decoded + 1) / 2
 
 vutils.save_image(decoded, "bo_clip_results.png", nrow=5)
 print(f"\nSaved results to 'bo_clip_results.png'")
-print("左4つが初期サンプル、右端がBOによって『cowboy angel』に最も近いと提案された新しいサンプルです。")
+# ★★★ 修正点3: 結果表示テキストを可変に ★★★
+print(f"左4つが初期サンプル、右端がBOによって『{TARGET_TEXT}』に最も近いと提案された新しいサンプルです。")

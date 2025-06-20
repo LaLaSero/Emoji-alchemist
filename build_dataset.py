@@ -1,5 +1,6 @@
 # build_dataset.py
 import glob, os, json, torch
+from pathlib import Path
 from torchvision import transforms
 from PIL import Image
 
@@ -14,6 +15,12 @@ files = glob.glob(os.path.join(ROOT, "*.png"))
 with open(META_JSON, "r", encoding="utf-8") as fp:
     meta = json.load(fp)
 
+# map hexcode (lowercase) -> annotation text (e.g., "grinning face")
+annotation_map = {
+    entry["hexcode"].lower(): entry.get("annotation", "")
+    for entry in meta
+}
+
 hex_set = {
     entry["hexcode"].lower()
     for entry in meta
@@ -21,10 +28,10 @@ hex_set = {
 }
 
 
-files = [f for f in files
-         if os.path.splitext(os.path.basename(f))[0].lower() in hex_set]
+# 全 openmoji を対象にする（絞り込みなし）
+files = glob.glob(os.path.join(ROOT, "*.png"))
+print(f"Using all {len(files)} PNGs from: {ROOT}")
 
-print(f"Selected {len(files)} PNGs in group: {TARGET_GROUP}")
 # ---------------------------------------------------------------------------
 
 transform = transforms.Compose([
@@ -37,6 +44,19 @@ tensor_list = [transform(Image.open(f).convert("RGBA")\
                           .convert("RGB"))     # RGBA→RGB
                for f in files]
 
+labels = [
+    annotation_map.get(
+        Path(f).stem.lower(),            # hexcode without extension
+        Path(f).stem.lower()             # fallback: hexcode itself
+    )
+    for f in files
+]
+
 data = torch.stack(tensor_list)               # [N,3,72,72]
 torch.save(data, "openmoji_72x72.pt")
-print("saved", data.shape)
+
+with open("openmoji_labels.txt", "w", encoding="utf-8") as fp:
+    fp.write("\n".join(labels))
+print("saved", len(labels), "text labels to openmoji_labels.txt")
+
+print("saved", data.shape, "and labels")
