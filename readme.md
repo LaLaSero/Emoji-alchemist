@@ -63,7 +63,9 @@ Human Feedbackボーナス: ユーザーが「良い」とクリックした画�
 | <img src="assets/slides/slide_7.png" width="100%"> | <img src="assets/slides/slide_8.png" width="100%"> |
 
 ## 🚀 Demo
-（ここにデモのGIFや動画を挿入することを強く推奨します）
+<p align="center">
+  <img src="assets/images/demo.gif" width="65%" alt="Demo animation">
+</p>
 
 インタラクティブな生成プロセス:
 
