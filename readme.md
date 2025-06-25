@@ -116,10 +116,11 @@ git clone https://github.com/your-username/Emoji-Alchemist.git
 cd Emoji-Alchemist
 
 # 2. Install dependencies
-pip install -r requirements.txt
+pip install -e .
 
 # 3. Run the application
-python app.py
+cd srcs
+sh run_server.sh
 ```
 
 ---
